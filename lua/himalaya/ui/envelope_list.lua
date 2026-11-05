@@ -26,6 +26,32 @@ local function has_flag(flags, target)
 	return false
 end
 
+-- Truncates text to at most `width` display cells without ever splitting a
+-- character. Slicing bytes leaves invalid UTF-8, which Neovim renders as
+-- replacement glyphs (a CJK character is 3 bytes but 2 cells wide).
+local function truncate_width(text, width)
+	if width <= 0 then
+		return ""
+	end
+	if vim.fn.strdisplaywidth(text) <= width then
+		return text
+	end
+
+	-- The width of a prefix grows with its character count, so binary search
+	-- the longest prefix that fits instead of dropping one byte at a time.
+	local lo, hi = 0, vim.fn.strchars(text)
+	while lo < hi do
+		local mid = math.floor((lo + hi + 1) / 2)
+		if vim.fn.strdisplaywidth(vim.fn.strcharpart(text, 0, mid)) <= width then
+			lo = mid
+		else
+			hi = mid - 1
+		end
+	end
+
+	return vim.fn.strcharpart(text, 0, lo)
+end
+
 function M.render(bufnr, envelopes)
 	vim.bo[bufnr].modifiable = true
 	vim.bo[bufnr].filetype = "himalaya-envelope-listing"
@@ -97,28 +123,19 @@ function M.render(bufnr, envelopes)
 			local sender = type(env.from) == "table" and (env.from[1] or env.from) or {}
 			from = sender.name or sender.email or sender.addr or "Unknown"
 		end
-		local from_display = from:sub(1, 23)
+		local from_display = truncate_width(from, 23)
 		local from_padding = 23 - vim.fn.strdisplaywidth(from_display)
 		if from_padding < 0 then
 			from_padding = 0
 		end
 		line:append(from_display .. string.rep(" ", from_padding) .. " ", "HimalayaFrom")
 
-		-- Subject - truncate based on display width
+		-- Subject - truncate based on display width, keeping whole characters
 		local subject = env.subject or "(no subject)"
 		local subject_display = subject
-		local truncated = false
 
-		while vim.fn.strdisplaywidth(subject_display) > subject_width do
-			subject_display = subject_display:sub(1, #subject_display - 1)
-			truncated = true
-		end
-
-		if truncated then
-			while vim.fn.strdisplaywidth(subject_display .. "...") > subject_width do
-				subject_display = subject_display:sub(1, #subject_display - 1)
-			end
-			subject_display = subject_display .. "..."
+		if vim.fn.strdisplaywidth(subject_display) > subject_width then
+			subject_display = truncate_width(subject, subject_width - 3) .. "..."
 		end
 
 		local padding = subject_width + 1 - vim.fn.strdisplaywidth(subject_display)
