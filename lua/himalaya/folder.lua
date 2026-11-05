@@ -238,7 +238,12 @@ function M.reload()
 	end
 
 	local height = vim.api.nvim_win_get_height(vim.api.nvim_get_current_win())
-	envelope.list({ folder = state.current_folder, page_size = height }, function(err, data)
+	envelope.list({
+		folder = state.current_folder,
+		page = state.current_page,
+		page_size = height,
+		account = state.current_account,
+	}, function(err, data)
 		if err then
 			layout.hide_spinner()
 			vim.notify("Failed to load emails: " .. err, vim.log.levels.ERROR)
