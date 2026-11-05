@@ -17,7 +17,8 @@ CONTENTS                                                    *himalaya-contents*
 
 himalaya.nvim is a modern Neovim client for the Himalaya CLI email tool (v2.1+).
 It provides mailbox tree browsing, envelope listing with pagination and search,
-message reading with automatic seen flags, and a multi-window floating composer.
+message reading with automatic seen flags, optional HTML rendering through an
+external renderer, and a multi-window floating composer.
 
 ==============================================================================
 2. REQUIREMENTS                                        *himalaya-requirements*
@@ -25,6 +26,7 @@ message reading with automatic seen flags, and a multi-window floating composer.
 - Neovim >= 0.8
 - himalaya CLI v2.0+ (https://github.com/pimalaya/himalaya)
 - nui.nvim (https://github.com/MunifTanjim/nui.nvim)
+- Optional for HTML rendering: w3m, lynx or pandoc
 
 ==============================================================================
 3. COMMANDS                                                 *himalaya-commands*
@@ -83,6 +85,7 @@ Email Reading (himalaya-email):
     gC            Copy email
     ga            Download attachments
     gFa / gFr     Add / remove flags
+    gH            Toggle rendered HTML and its source (render_html)
 
 Composer:
     <Tab>         Focus next field (To -> Cc -> Subject -> Body)
@@ -102,6 +105,9 @@ Setup example:
         wrap_folder_navigation = true,
         icons_enabled = false,
         custom_select = nil, -- optional function(items, opts, on_choice)
+        render_html = false, -- render HTML bodies to text (w3m/lynx/pandoc)
+        prefer_html = false, -- prefer HTML when text/plain also exists
+        html_renderer = "w3m", -- w3m, lynx or pandoc
     })
 <
 

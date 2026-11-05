@@ -16,6 +16,10 @@ local actions = {
 		email_mod.close()
 	end,
 
+	toggle_html = function()
+		email_mod.toggle_html()
+	end,
+
 	reply = function()
 		actions_mod.reply()
 	end,

@@ -23,6 +23,7 @@ Himalaya is a modern CLI tool for managing emails from the terminal. This plugin
 - **Mailbox navigation**: Sidebar with nested tree hierarchy, unread count badges, next/previous navigation, and interactive picker.
 - **Email listing**: Table layout displaying flags, attachment presence, sender, truncated subject, and relative dates.
 - **Email reading**: Open and read emails in split below with `<CR>`, automatic `seen` flag handling.
+- **HTML rendering** (opt-in): Render HTML bodies to text through `w3m`, `lynx` or `pandoc`, with `gH` toggling the source.
 - **Multi-window composer**: Floating popup matching main dimensions, dedicated sub-windows for To, Cc, Subject, and full-featured vim editing in Body with field cycling (`<Tab>` / `<S-Tab>`), send (`<C-s>`), and draft saving (`<C-d>`).
 - **Mailbox actions**: Move (`gM`), copy (`gC`), and delete (`gD` with confirmation).
 - **Flag operations**: Add (`gFa`) or remove (`gFr`) flags (`seen`, `flagged`, `answered`, `draft`) with immediate UI update.
@@ -36,6 +37,7 @@ Himalaya is a modern CLI tool for managing emails from the terminal. This plugin
 - Neovim >= 0.8
 - [Himalaya CLI v2.0+](https://github.com/pimalaya/himalaya) installed and configured
 - [nui.nvim](https://github.com/MunifTanjim/nui.nvim)
+- Optional for HTML rendering: `w3m`, `lynx` or `pandoc`
 
 ## Installation
 
@@ -129,6 +131,7 @@ Default keybindings (all customizable via `config.keymaps`):
 | `ga` | `download_attachments` | Download attachments |
 | `gFa` | `flag_add` | Add flag |
 | `gFr` | `flag_remove` | Remove flag |
+| `gH` | `toggle_html` | Toggle rendered HTML and its source (when `render_html` is on) |
 
 #### Email Composer (Floating Popup)
 
@@ -152,6 +155,9 @@ require("himalaya").setup({
   wrap_folder_navigation = true, -- wrap to first/last when navigating
   icons_enabled = false, -- use nerd font icons for folders
   custom_select = nil, -- custom picker hook: function(items, opts, on_choice)
+  render_html = false, -- render HTML bodies to text instead of raw markup
+  prefer_html = false, -- prefer the HTML body when text/plain also exists
+  html_renderer = "w3m", -- w3m, lynx or pandoc; must read a local HTML file
   keymaps = {
     listing = {
       ["g?"] = "show_keymaps",
@@ -183,6 +189,7 @@ require("himalaya").setup({
       ["g?"] = "show_keymaps",
       ["gq"] = "close_email",
       ["q"] = "close_email",
+      ["gH"] = "toggle_html",
       ["gr"] = "reply",
       ["r"] = "reply",
       ["gf"] = "forward",
