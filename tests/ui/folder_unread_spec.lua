@@ -15,6 +15,11 @@ describe("UI Folder List Unread Counts", function()
 		state.current_folder = "INBOX"
 	end)
 
+	after_each(function()
+		require("himalaya.cli.runner").reset_mock()
+		state.current_account = ""
+	end)
+
 	it("renders unread count in parentheses for folders with unread > 0", function()
 		local mailboxes = {
 			{ id = "INBOX", name = "INBOX", total = 42, unread = 7 },
@@ -70,5 +75,51 @@ describe("UI Folder List Unread Counts", function()
 
 		lines = vim.api.nvim_buf_get_lines(sidebar_popup.bufnr, 0, -1, false)
 		assert.falsy(lines[1]:find("%("))
+	end)
+
+	it("fills unread counts through a background request", function()
+		local runner = require("himalaya.cli.runner")
+		local fixtures = require("fixtures.v2_fixtures")
+		state.current_account = "gmail"
+
+		local executed_cmd = nil
+		runner.set_mock(function(cmd, callback)
+			executed_cmd = cmd
+			callback(nil, fixtures.mailboxes_json)
+		end)
+
+		folder_list.refresh_counts("gmail", sidebar_popup.bufnr)
+
+		assert.truthy(executed_cmd)
+		local cmd_str = table.concat(executed_cmd, " ")
+		assert.truthy(cmd_str:match("mailbox list"))
+		assert.truthy(cmd_str:match("%-%-counts"), "counts refresh must ask for --counts")
+
+		local lines = vim.api.nvim_buf_get_lines(sidebar_popup.bufnr, 0, -1, false)
+		assert.truthy(lines[1]:find("INBOX %(3%)"), "sidebar should get the unread badge")
+	end)
+
+	it("drops counts that arrive after the account changed", function()
+		local runner = require("himalaya.cli.runner")
+		local fixtures = require("fixtures.v2_fixtures")
+		state.current_account = "gmail"
+
+		local deliver = nil
+		runner.set_mock(function(_, callback)
+			deliver = callback
+		end)
+
+		folder_list.refresh_counts("gmail", sidebar_popup.bufnr)
+		assert.truthy(deliver, "expected the counts request to be started")
+
+		-- The user switches account and the sidebar is painted for the new one
+		-- before the old counts response lands.
+		state.current_account = "other"
+		folder_list.render(sidebar_popup.bufnr, { { id = "INBOX", name = "INBOX", total = 1, unread = 1 } })
+		deliver(nil, fixtures.mailboxes_json)
+
+		local lines = vim.api.nvim_buf_get_lines(sidebar_popup.bufnr, 0, -1, false)
+		assert.truthy(lines[1]:find("INBOX %(1%)"), "stale counts must not overwrite the new account")
+		assert.falsy(lines[1]:find("INBOX %(3%)"))
 	end)
 end)

@@ -204,19 +204,23 @@ function M.create()
 		load_envelopes()
 	end
 
-	-- Load folders first to resolve active mailbox dynamically (matching himalaya-tui)
+	-- Paint the mailbox tree and the envelopes as soon as possible. On IMAP the
+	-- CLI resolves unread counts with one `STATUS` per mailbox, so counts come
+	-- from a second, background request (see folder_list.refresh_counts).
 	local cached_folders = cache.get_folders()
 	if cached_folders then
 		on_folders_loaded(cached_folders)
+		folder_list.refresh_counts(state.current_account, sidebar.bufnr)
 	else
 		M.show_spinner("Loading")
-		folder.list({ account = state.current_account }, function(err, data)
+		folder.list({ account = state.current_account, counts = false }, function(err, data)
 			if err then
 				M.hide_spinner()
 				vim.notify("Failed to load folders: " .. err, vim.log.levels.ERROR)
 				return
 			end
 			on_folders_loaded(data)
+			folder_list.refresh_counts(state.current_account, sidebar.bufnr)
 		end)
 	end
 

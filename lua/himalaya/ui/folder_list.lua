@@ -130,4 +130,32 @@ function M.render(bufnr, folders)
 	vim.bo[bufnr].modified = false
 end
 
+-- Fetches mailbox unread counts and re-renders the sidebar in place.
+--
+-- On IMAP the CLI resolves counts with one `STATUS` per mailbox, so this must
+-- never sit on the path that paints the mailbox tree and the envelope list:
+-- callers render the tree without counts first, then fill the badges here once
+-- the CLI answers. Responses landing after the UI closed or the account
+-- changed are dropped.
+function M.refresh_counts(account, bufnr)
+	if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then
+		return
+	end
+
+	require("himalaya.cli.mailbox").list({ account = account }, function(err, data)
+		if err or not data then
+			return
+		end
+		if state.current_account ~= account or state.sidebar ~= bufnr then
+			return
+		end
+		if not vim.api.nvim_buf_is_valid(bufnr) then
+			return
+		end
+
+		require("himalaya.cache").set_folders(data)
+		M.render(bufnr, data)
+	end)
+end
+
 return M
