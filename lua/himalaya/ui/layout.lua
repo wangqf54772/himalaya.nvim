@@ -80,7 +80,7 @@ function M.create()
 
 	local sidebar = Popup({
 		enter = false,
-		focusable = false,
+		focusable = true,
 		border = {
 			style = border_style,
 			text = {

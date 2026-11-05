@@ -53,6 +53,17 @@ describe("UI Folder List Unread Counts", function()
 		assert.falsy(lines[3]:find("%("), "Later child folder should not display unread count")
 	end)
 
+	it("maps sidebar lines to selectable mailboxes", function()
+		folder_list.render(sidebar_popup.bufnr, {
+			{ id = "INBOX", name = "INBOX", total = 1, unread = 0 },
+			{ id = "Work/Urgent", name = "Work/Urgent", total = 1, unread = 0 },
+		})
+
+		assert.equals("INBOX", state.folder_lines[1])
+		assert.is_nil(state.folder_lines[2])
+		assert.equals("Work/Urgent", state.folder_lines[3])
+	end)
+
 	it("adjusts cached folder unread count and re-renders sidebar", function()
 		local cache = require("himalaya.cache")
 		local mailboxes = {

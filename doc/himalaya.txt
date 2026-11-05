@@ -75,6 +75,9 @@ Email Listing (himalaya-envelope-listing):
     gFa / gFr     Add / remove flags (seen, flagged, etc.)
     g/            Search envelopes
 
+Mailbox Sidebar (himalaya-folder-listing):
+    <CR> / click  Open the mailbox under the cursor
+
 Email Reading (himalaya-email):
     g?            Show available keybindings
     gq / q        Close email reader pane

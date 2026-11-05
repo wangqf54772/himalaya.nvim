@@ -16,6 +16,7 @@ M.email_popup = nil -- Popup object for email reading
 M.spinner_timer = nil -- Timer for spinner animation
 M.is_open = false
 M.folder_list = {} -- Flat list of accessible folders/mailboxes
+M.folder_lines = {} -- Sidebar line number -> mailbox name (selectable lines)
 
 function M.reset_ui()
 	if M.spinner_timer then

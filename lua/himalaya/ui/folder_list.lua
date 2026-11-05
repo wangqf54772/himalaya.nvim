@@ -28,6 +28,11 @@ local function render_tree(items, lines, depth, active_line)
 		table.insert(lines, line)
 		local current_line = #lines
 
+		-- Remember which sidebar line maps to a selectable mailbox
+		if item.name then
+			state.folder_lines[current_line] = item.name
+		end
+
 		local is_active = is_same_folder(item.name, state.current_folder)
 		if is_active then
 			active_line.line = current_line
@@ -112,6 +117,7 @@ function M.render(bufnr, folders)
 
 	local lines = {}
 	local active_line = { line = 0 }
+	state.folder_lines = {}
 	render_tree(tree, lines, 0, active_line)
 
 	for i, line in ipairs(lines) do

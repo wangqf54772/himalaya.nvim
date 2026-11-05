@@ -20,7 +20,7 @@ Himalaya is a modern CLI tool for managing emails from the terminal. This plugin
 ## Features
 
 - **Himalaya CLI v2.x compatible**: Fully updated to the v2 CLI architecture (`--json`, `mailbox`, `envelope`, `message`, `flag`, `attachment`, `account`).
-- **Mailbox navigation**: Sidebar with nested tree hierarchy, unread count badges, next/previous navigation, and interactive picker.
+- **Mailbox navigation**: Sidebar with nested tree hierarchy, unread count badges, next/previous navigation, interactive picker, and clickable mailboxes.
 - **Email listing**: Table layout displaying flags, attachment presence, sender, truncated subject, and relative dates.
 - **Email reading**: Open and read emails in split below with `<CR>`, automatic `seen` flag handling.
 - **HTML rendering** (opt-in): Render HTML bodies to text through `w3m`, `lynx` or `pandoc`, with `gH` toggling the source.
@@ -116,6 +116,12 @@ Default keybindings (all customizable via `config.keymaps`):
 | `gFa` | `flag_add` | Add flag (`seen`, `flagged`, etc.) |
 | `gFr` | `flag_remove` | Remove flag |
 | `g/` | `search` | Search envelopes query |
+
+#### Mailbox Sidebar
+
+| Key | Description |
+| --- | ----------- |
+| `<CR>` / click | Open the mailbox under the cursor |
 
 #### Email Reading
 
