@@ -81,11 +81,11 @@ Email Listing (himalaya-envelope-listing):
 
 Mailbox Sidebar (himalaya-folder-listing):
     <CR>          Open the mailbox and focus the envelope list
-    click         Open the mailbox, keep the focus in the sidebar
+    click         Open the mailbox, keep focus and cursor in the sidebar
 
 Account Sidebar (himalaya-account-listing):
     <CR>          Switch account and focus the envelope list
-    click         Switch account, keep the focus in the sidebar
+    click         Switch account, keep focus and cursor in the sidebar
 
 Email Reading (himalaya-email):
     g?            Show available keybindings

@@ -19,6 +19,7 @@ function M.render(bufnr, accounts, current)
 
 	state.account_lines = {}
 	local lines = {}
+	local active_line = nil
 
 	for i, account in ipairs(accounts or {}) do
 		local name = account.name or ("account " .. i)
@@ -26,6 +27,9 @@ function M.render(bufnr, accounts, current)
 			or ((current == nil or current == "") and account.default == true)
 
 		local line = NuiLine()
+		if is_current then
+			active_line = i
+		end
 		line:append(" " .. name, is_current and "HimalayaAccountActive" or "HimalayaAccount")
 		if account.default then
 			line:append(" (default)", "HimalayaAccountDefault")
@@ -40,6 +44,13 @@ function M.render(bufnr, accounts, current)
 	else
 		for i, line in ipairs(lines) do
 			line:render(bufnr, -1, i)
+		end
+	end
+
+	-- Keep the cursor on the active account (re-rendering clears the buffer).
+	if active_line then
+		for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
+			pcall(vim.api.nvim_win_set_cursor, win, { active_line, 0 })
 		end
 	end
 

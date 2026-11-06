@@ -4,6 +4,8 @@ local state = require("himalaya.state")
 describe("Account list", function()
 	it("renders names, the default marker and the line map", function()
 		local buf = vim.api.nvim_create_buf(false, true)
+		local win = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(win, buf)
 		state.current_account = "jlu"
 
 		account_list.render(buf, {
@@ -21,7 +23,9 @@ describe("Account list", function()
 		assert.equals("qq", state.account_lines[3])
 		assert.equals("himalaya-account-listing", vim.bo[buf].filetype)
 		assert.falsy(vim.bo[buf].modifiable)
+		assert.equals(2, vim.api.nvim_win_get_cursor(win)[1], "cursor should move to the current account")
 
+		vim.api.nvim_win_set_buf(win, vim.api.nvim_create_buf(false, true))
 		vim.api.nvim_buf_delete(buf, { force = true })
 	end)
 end)
