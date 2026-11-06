@@ -128,11 +128,16 @@ Default keybindings (all customizable via `config.keymaps`):
 | --- | ----------- |
 | `<CR>` / click | Open the mailbox under the cursor |
 
+A click keeps the focus in the sidebar; `<CR>` switches the mailbox and moves
+the focus back to the envelope list.
+
 #### Account Sidebar
 
 | Key | Description |
 | --- | ----------- |
 | `<CR>` / click | Switch to the account under the cursor |
+
+A click keeps the focus in the sidebar; `<CR>` returns to the envelope list.
 
 #### Email Reading
 

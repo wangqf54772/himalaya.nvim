@@ -7,7 +7,7 @@ local function folder_under_cursor()
 	return state.folder_lines and state.folder_lines[line]
 end
 
-local function open_folder()
+local function open_folder(focus_list)
 	local name = folder_under_cursor()
 	if not name then
 		return
@@ -15,11 +15,14 @@ local function open_folder()
 
 	require("himalaya.folder").switch_to(name)
 
-	-- Hand focus back to the envelope list so navigation keeps working.
-	require("himalaya.ui.windows").focus_list()
+	if focus_list then
+		require("himalaya.ui.windows").focus_list()
+	end
 end
 
-vim.keymap.set("n", "<CR>", open_folder, {
+vim.keymap.set("n", "<CR>", function()
+	open_folder(true)
+end, {
 	buffer = bufnr,
 	nowait = true,
 	desc = "Open mailbox",
@@ -36,7 +39,8 @@ vim.keymap.set("n", "<LeftMouse>", function()
 
 	vim.api.nvim_set_current_win(mouse.winid)
 	pcall(vim.api.nvim_win_set_cursor, mouse.winid, { mouse.line, 0 })
-	open_folder()
+	-- Keep focus in the sidebar: clicking a folder switches the pane too.
+	open_folder(false)
 end, {
 	buffer = bufnr,
 	nowait = true,

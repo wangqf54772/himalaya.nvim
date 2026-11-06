@@ -7,17 +7,22 @@ local function account_under_cursor()
 	return state.account_lines and state.account_lines[line]
 end
 
-local function switch_account()
+local function switch_account(focus_list)
 	local name = account_under_cursor()
 	if not name then
 		return
 	end
 
 	require("himalaya.account").switch_to(name)
-	require("himalaya.ui.windows").focus_list()
+
+	if focus_list then
+		require("himalaya.ui.windows").focus_list()
+	end
 end
 
-vim.keymap.set("n", "<CR>", switch_account, {
+vim.keymap.set("n", "<CR>", function()
+	switch_account(true)
+end, {
 	buffer = bufnr,
 	nowait = true,
 	desc = "Switch account",
@@ -34,7 +39,8 @@ vim.keymap.set("n", "<LeftMouse>", function()
 
 	vim.api.nvim_set_current_win(mouse.winid)
 	pcall(vim.api.nvim_win_set_cursor, mouse.winid, { mouse.line, 0 })
-	switch_account()
+	-- Keep focus in the sidebar: clicking an account switches the pane too.
+	switch_account(false)
 end, {
 	buffer = bufnr,
 	nowait = true,

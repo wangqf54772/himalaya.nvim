@@ -80,10 +80,12 @@ Email Listing (himalaya-envelope-listing):
     g/            Search envelopes
 
 Mailbox Sidebar (himalaya-folder-listing):
-    <CR> / click  Open the mailbox under the cursor
+    <CR>          Open the mailbox and focus the envelope list
+    click         Open the mailbox, keep the focus in the sidebar
 
 Account Sidebar (himalaya-account-listing):
-    <CR> / click  Switch to the account under the cursor
+    <CR>          Switch account and focus the envelope list
+    click         Switch account, keep the focus in the sidebar
 
 Email Reading (himalaya-email):
     g?            Show available keybindings
