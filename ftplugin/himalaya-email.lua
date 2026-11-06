@@ -82,3 +82,5 @@ vim.keymap.set("c", "<CR>", function()
 	end
 	return "<CR>"
 end, { expr = true, buffer = bufnr })
+
+require("himalaya.ui.mouse").attach(bufnr)

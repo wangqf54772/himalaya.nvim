@@ -28,21 +28,4 @@ end, {
 	desc = "Open mailbox",
 })
 
-vim.keymap.set("n", "<LeftMouse>", function()
-	local mouse = vim.fn.getmousepos()
-	if mouse.winid == 0 or not vim.api.nvim_win_is_valid(mouse.winid) then
-		return
-	end
-	if vim.api.nvim_win_get_buf(mouse.winid) ~= bufnr or mouse.line < 1 then
-		return
-	end
-
-	vim.api.nvim_set_current_win(mouse.winid)
-	pcall(vim.api.nvim_win_set_cursor, mouse.winid, { mouse.line, 0 })
-	-- Keep focus in the sidebar: clicking a folder switches the pane too.
-	open_folder(false)
-end, {
-	buffer = bufnr,
-	nowait = true,
-	desc = "Open mailbox",
-})
+require("himalaya.ui.mouse").attach(bufnr)

@@ -17,7 +17,7 @@ describe("Listing mouse mappings", function()
 
 		assert.truthy(single, "expected a single-click mapping")
 		assert.truthy(double, "expected a double-click mapping")
-		assert.equals("Select email", single.desc)
+		assert.equals("Himalaya click", single.desc)
 		assert.equals("Open email", double.desc)
 
 		vim.api.nvim_buf_delete(buf, { force = true })

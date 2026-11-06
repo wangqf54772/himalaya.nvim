@@ -59,6 +59,7 @@ function M.create_buffer(name, filetype, listed)
 	vim.bo[buf].modifiable = false
 	pcall(vim.api.nvim_buf_set_name, buf, unique_name(name))
 	vim.bo[buf].filetype = filetype
+	vim.b[buf].himalaya = true
 	if listed then
 		vim.b[buf].himalaya_buffer = true
 	end
