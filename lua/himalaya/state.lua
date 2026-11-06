@@ -5,35 +5,36 @@ M.current_folder = nil -- Discovered dynamically from mailboxes
 M.current_page = 1
 M.current_envelope_count = 0 -- Number of emails in current view
 M.current_envelopes = {} -- Envelopes currently displayed in main view
-M.layout = nil
 M.sidebar = nil -- Buffer number
 M.main = nil -- Buffer number
 M.email = nil -- Buffer number for email reading pane
-M.email_visible = false -- Track if email pane is visible
-M.main_popup = nil -- Popup object for updating border text
-M.sidebar_popup = nil -- Popup object for spinner
-M.email_popup = nil -- Popup object for email reading
-M.spinner_timer = nil -- Timer for spinner animation
 M.is_open = false
 M.folder_list = {} -- Flat list of accessible folders/mailboxes
 M.folder_lines = {} -- Sidebar line number -> mailbox name (selectable lines)
+M.account_lines = {} -- Account sidebar line number -> account name
+
+-- Native window UI (see himalaya.ui.windows)
+M.tab = nil -- Himalaya tabpage
+M.prev_tab = nil -- Tabpage to return to when closing
+M.prev_win = nil -- Window to return to when closing
+M.prev_buf = nil -- Buffer to restore when the Himalaya tab is the only one
+M.wins = {} -- { folders = win, accounts = win, list = win }
+M.accounts = nil -- Accounts sidebar buffer
+M.email_buffers = {} -- Message id -> reader buffer
+M.email_state = {} -- Reader buffer -> per-message render state
+M.closing = false -- Guard against re-entrant close/BufDelete handlers
 
 function M.reset_ui()
-	if M.spinner_timer then
-		pcall(function()
-			M.spinner_timer:stop()
-		end)
-		M.spinner_timer = nil
-	end
 	M.is_open = false
-	M.layout = nil
 	M.sidebar = nil
 	M.main = nil
+	M.accounts = nil
 	M.email = nil
-	M.email_visible = false
-	M.main_popup = nil
-	M.sidebar_popup = nil
-	M.email_popup = nil
+	M.wins = {}
+	M.tab = nil
+	M.email_buffers = {}
+	M.email_state = {}
+	M.account_lines = {}
 	M.selected_email_id = nil
 	M.current_folder = nil
 end

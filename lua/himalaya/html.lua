@@ -93,6 +93,21 @@ function M.select(message, prefer_html)
 	return nil
 end
 
+--- Removes image tags before rendering.
+---
+--- Terminal renderers cannot show them, and w3m prints a noisy `[filename]`
+--- placeholder for every image, which clutters marketing emails.
+---@param source string
+---@return string
+function M.prepare(source)
+	source = source:gsub("<%s*[Ii][Mm][Gg][^>]*>", "")
+	source = source:gsub(
+		"<%s*[Pp][Ii][Cc][Tt][Uu][Rr][Ee][^>]*>.-</%s*[Pp][Ii][Cc][Tt][Uu][Rr][Ee]%s*>",
+		""
+	)
+	return source
+end
+
 --- Renders an HTML body to plain text through the configured renderer.
 ---
 --- The HTML goes through a private temporary file instead of stdin: email
@@ -102,6 +117,7 @@ end
 ---@param width number|nil
 ---@param callback fun(err: string|nil, rendered: string|nil)
 function M.render(html, renderer, width, callback)
+	html = M.prepare(html)
 	local path = vim.fn.tempname()
 	local cmd, err = M.command(renderer, width, path)
 	if not cmd then

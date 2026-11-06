@@ -136,7 +136,7 @@ describe("UI Composer", function()
 		end
 	end)
 
-	it("falls back to state.main_popup window if previous window was closed", function()
+	it("falls back to the list window if the previous window was closed", function()
 		local main_buf = vim.api.nvim_create_buf(false, true)
 		local main_win = vim.api.nvim_open_win(main_buf, true, {
 			relative = "editor",
@@ -146,7 +146,9 @@ describe("UI Composer", function()
 			height = 20,
 		})
 		local state = require("himalaya.state")
-		state.main_popup = { winid = main_win }
+		state.is_open = true
+		state.tab = vim.api.nvim_get_current_tabpage()
+		state.wins = { list = main_win }
 
 		local temp_buf = vim.api.nvim_create_buf(false, true)
 		local temp_win = vim.api.nvim_open_win(temp_buf, true, {
@@ -159,7 +161,6 @@ describe("UI Composer", function()
 		vim.api.nvim_set_current_win(temp_win)
 
 		composer.open()
-		-- Close temp_win while composer is open
 		vim.api.nvim_win_close(temp_win, true)
 
 		composer.close()
@@ -168,6 +169,6 @@ describe("UI Composer", function()
 		if vim.api.nvim_win_is_valid(main_win) then
 			vim.api.nvim_win_close(main_win, true)
 		end
-		state.main_popup = nil
+		state.reset_ui()
 	end)
 end)

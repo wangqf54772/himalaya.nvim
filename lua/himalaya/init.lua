@@ -1,6 +1,6 @@
 local config = require("himalaya.config")
-local layout = require("himalaya.ui.layout")
 local state = require("himalaya.state")
+local windows = require("himalaya.ui.windows")
 
 local M = {}
 
@@ -9,31 +9,17 @@ function M.setup(opts)
 end
 
 function M.open()
-	-- Check if already open
-	if state.is_open then
-		vim.notify("Himalaya is already open", vim.log.levels.WARN)
+	if windows.is_open() then
+		pcall(vim.api.nvim_set_current_tabpage, state.tab)
+		vim.notify("Himalaya is already open", vim.log.levels.INFO)
 		return
 	end
 
-	-- Detect launch method
-	local is_cmdline = vim.v.vim_did_enter == 0
-
-	if is_cmdline then
-		-- Use fullscreen native split layout
-		require("himalaya.ui.fullscreen").create()
-	else
-		-- Use nui popup layout (layout.create already mounts)
-		layout.create()
-	end
-
-	state.is_open = true
+	windows.create()
 end
 
 function M.close()
-	if state.layout then
-		state.layout:unmount()
-	end
-	state.reset_ui()
+	windows.close()
 end
 
 return M

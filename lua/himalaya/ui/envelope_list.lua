@@ -73,9 +73,13 @@ function M.render(bufnr, envelopes)
 	-- Use fixed max date width
 	local max_date_width = date_utils.max_date_width()
 
-	-- Get window width for subject calculation (fallback to 80 if headless)
+	-- Get the width of the window actually showing the listing (fallback to 80)
 	local win_width = 80
-	local ok, width = pcall(vim.api.nvim_win_get_width, 0)
+	local win = vim.fn.bufwinid(bufnr)
+	if win == -1 then
+		win = vim.api.nvim_get_current_win()
+	end
+	local ok, width = pcall(vim.api.nvim_win_get_width, win)
 	if ok and width and width > 40 then
 		win_width = width
 	end

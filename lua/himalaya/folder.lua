@@ -5,6 +5,7 @@ local folder_list = require("himalaya.ui.folder_list")
 local envelope = require("himalaya.cli.envelope")
 local envelope_list = require("himalaya.ui.envelope_list")
 local layout = require("himalaya.ui.layout")
+local windows = require("himalaya.ui.windows")
 
 local M = {}
 
@@ -22,7 +23,8 @@ local function reload_emails(silent)
 	layout.update_page_footer()
 
 	local cache = require("himalaya.cache")
-	local height = vim.api.nvim_win_get_height(vim.api.nvim_get_current_win())
+	local win = state.wins and state.wins.list
+	local height = (win and vim.api.nvim_win_is_valid(win)) and vim.api.nvim_win_get_height(win) or 20
 	envelope.list({ folder = state.current_folder, page_size = height, account = state.current_account }, function(err, data)
 		if err then
 			layout.hide_spinner()
@@ -33,6 +35,7 @@ local function reload_emails(silent)
 		cache.set_envelopes(state.current_folder, state.current_page, data)
 		envelope_list.render(state.main, data)
 		layout.hide_spinner()
+		layout.update_page_footer()
 	end)
 end
 
@@ -87,6 +90,8 @@ function M.switch_to(folder_name)
 	end
 
 	state.current_folder = target
+	windows.show_list()
+
 	local cache = require("himalaya.cache")
 	local cached = cache.get_folders()
 	if cached and state.sidebar then
@@ -135,6 +140,7 @@ function M.next(silent, skip_reload)
 	end
 
 	if changed then
+		windows.show_list()
 		local cache = require("himalaya.cache")
 		local cached = cache.get_folders()
 		if cached and state.sidebar then
@@ -191,6 +197,7 @@ function M.previous(silent, skip_reload)
 	end
 
 	if changed then
+		windows.show_list()
 		local cache = require("himalaya.cache")
 		local cached = cache.get_folders()
 		if cached and state.sidebar then
@@ -228,6 +235,7 @@ end
 
 -- Reload current folder
 function M.reload()
+	windows.show_list()
 	layout.show_spinner("Reloading")
 
 	reload_folders(true)
@@ -237,7 +245,8 @@ function M.reload()
 		return
 	end
 
-	local height = vim.api.nvim_win_get_height(vim.api.nvim_get_current_win())
+	local win = state.wins and state.wins.list
+	local height = (win and vim.api.nvim_win_is_valid(win)) and vim.api.nvim_win_get_height(win) or 20
 	envelope.list({
 		folder = state.current_folder,
 		page = state.current_page,
@@ -252,6 +261,7 @@ function M.reload()
 
 		envelope_list.render(state.main, data)
 		layout.hide_spinner()
+		layout.update_page_footer()
 	end)
 end
 

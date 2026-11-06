@@ -174,7 +174,7 @@ function M.move()
 				end
 				state.current_envelopes = remaining
 				refresh_listing()
-				if state.email_visible and state.selected_email_id == env.id then
+				if require("himalaya.ui.windows").reader_visible() and state.selected_email_id == env.id then
 					email_mod.close()
 				end
 				vim.notify(string.format("Moved email %s to %s", env.id, target_mbox.name), vim.log.levels.INFO)
@@ -209,7 +209,7 @@ function M.delete()
 					end
 					state.current_envelopes = remaining
 					refresh_listing()
-					if state.email_visible and state.selected_email_id == env.id then
+					if require("himalaya.ui.windows").reader_visible() and state.selected_email_id == env.id then
 						email_mod.close()
 					end
 					vim.notify(string.format("Deleted email %s", env.id), vim.log.levels.INFO)

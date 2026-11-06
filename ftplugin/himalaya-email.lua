@@ -56,11 +56,27 @@ local actions = {
 -- Apply keymaps from config
 keymap_util.apply(bufnr, config.config.keymaps.email, actions)
 
--- Intercept :q, :q!, :quit, and :close to close only the email pane and return to email listing
+-- Intercept closing commands to close only the reader buffer and return to the
+-- listing, instead of letting :bdelete close the reader window.
+local close_commands = {
+	q = true,
+	["q!"] = true,
+	quit = true,
+	close = true,
+	bd = true,
+	["bd!"] = true,
+	bdelete = true,
+	["bdelete!"] = true,
+	bw = true,
+	["bw!"] = true,
+	bwipeout = true,
+	["bwipeout!"] = true,
+}
+
 vim.keymap.set("c", "<CR>", function()
 	if vim.fn.getcmdtype() == ":" then
 		local cmd = vim.fn.getcmdline():match("^%s*(.-)%s*$")
-		if cmd == "q" or cmd == "q!" or cmd == "quit" or cmd == "close" then
+		if close_commands[cmd] then
 			return "<C-u>lua require('himalaya.email').close()<CR>"
 		end
 	end

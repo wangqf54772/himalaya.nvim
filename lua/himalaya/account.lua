@@ -18,12 +18,17 @@ function M.switch_to(account_name)
 	-- Cached folders and envelopes belong to the previous account.
 	require("himalaya.cache").clear()
 
-	-- The reader pane would still show a message from the previous account.
+	-- Reader buffers hold messages from the previous account.
 	pcall(function()
-		require("himalaya.email").close()
+		require("himalaya.email").close_all()
 	end)
 
 	vim.notify("Switched to account: " .. account_name, vim.log.levels.INFO)
+
+	if state.accounts and vim.api.nvim_buf_is_valid(state.accounts) then
+		require("himalaya.ui.account_list").refresh(state.accounts)
+	end
+
 	folder.reload()
 end
 

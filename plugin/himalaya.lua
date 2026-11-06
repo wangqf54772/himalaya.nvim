@@ -1,5 +1,12 @@
 vim.api.nvim_create_user_command("Himalaya", function(opts)
 	local account = opts.args
+	local windows = require("himalaya.ui.windows")
+
+	if account and account ~= "" and windows.is_open() then
+		require("himalaya.account").switch_to(account)
+		return
+	end
+
 	if account and account ~= "" then
 		require("himalaya.state").current_account = account
 	end

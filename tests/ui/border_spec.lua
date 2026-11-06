@@ -1,5 +1,4 @@
 local config = require("himalaya.config")
-local layout = require("himalaya.ui.layout")
 local composer = require("himalaya.ui.composer")
 local state = require("himalaya.state")
 local runner = require("himalaya.cli.runner")
@@ -25,17 +24,6 @@ describe("UI Border Configuration", function()
 	it("allows configuring border as table with style from setup", function()
 		config.setup({ border = { style = "double" } })
 		assert.equals("double", config.get_border_style())
-	end)
-
-	it("uses configured square border in layout popups by default", function()
-		config.setup({ border = "single" })
-		runner.set_mock(function(_, cb) cb(nil, "{}") end)
-
-		layout.create()
-		assert.truthy(state.sidebar_popup)
-		assert.truthy(state.main_popup)
-		assert.equals("single", state.sidebar_popup.border.style)
-		assert.equals("single", state.main_popup.border.style)
 	end)
 
 	it("uses configured border in composer popups", function()

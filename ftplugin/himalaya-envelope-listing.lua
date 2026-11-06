@@ -115,3 +115,22 @@ local actions = {
 
 -- Apply keymaps from config
 keymap_util.apply(bufnr, config.config.keymaps.listing, actions)
+
+-- Single click opens the email under the cursor (like a mail client).
+vim.keymap.set("n", "<LeftMouse>", function()
+	local mouse = vim.fn.getmousepos()
+	if mouse.winid == 0 or not vim.api.nvim_win_is_valid(mouse.winid) then
+		return
+	end
+	if vim.api.nvim_win_get_buf(mouse.winid) ~= bufnr or mouse.line < 1 then
+		return
+	end
+
+	vim.api.nvim_set_current_win(mouse.winid)
+	pcall(vim.api.nvim_win_set_cursor, mouse.winid, { mouse.line, 0 })
+	email_mod.open()
+end, {
+	buffer = bufnr,
+	nowait = true,
+	desc = "Open email",
+})

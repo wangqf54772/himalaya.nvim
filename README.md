@@ -20,9 +20,11 @@ Himalaya is a modern CLI tool for managing emails from the terminal. This plugin
 ## Features
 
 - **Himalaya CLI v2.x compatible**: Fully updated to the v2 CLI architecture (`--json`, `mailbox`, `envelope`, `message`, `flag`, `attachment`, `account`).
-- **Mailbox navigation**: Sidebar with nested tree hierarchy, unread count badges, next/previous navigation, interactive picker, and clickable mailboxes.
+- **Native window layout**: A dedicated Neovim tabpage with a folder tree, an accounts pane and an envelope list, all in ordinary splits (no floating panes).
+- **Mailbox navigation**: Nested folder tree with unread badges plus an accounts pane, both clickable, with next/previous navigation and an interactive picker.
+- **Buffer tabs**: The envelope list and every opened email are listed buffers, so bufferline (or any buffer tabline) shows them as editor tabs; `q` closes the email tab.
 - **Email listing**: Table layout displaying flags, attachment presence, sender, truncated subject, and relative dates.
-- **Email reading**: Open and read emails in split below with `<CR>`, automatic `seen` flag handling.
+- **Email reading**: Open an email in its own buffer tab with `<CR>` or a click, automatic `seen` flag handling.
 - **HTML rendering** (opt-in): Render HTML bodies to text through `w3m`, `lynx` or `pandoc`, with `gH` toggling the source.
 - **Multi-window composer**: Floating popup matching main dimensions, dedicated sub-windows for To, Cc, Subject, and full-featured vim editing in Body with field cycling (`<Tab>` / `<S-Tab>`), send (`<C-s>`), and draft saving (`<C-d>`).
 - **Mailbox actions**: Move (`gM`), copy (`gC`), and delete (`gD` with confirmation).
@@ -36,8 +38,9 @@ Himalaya is a modern CLI tool for managing emails from the terminal. This plugin
 
 - Neovim >= 0.8
 - [Himalaya CLI v2.0+](https://github.com/pimalaya/himalaya) installed and configured
-- [nui.nvim](https://github.com/MunifTanjim/nui.nvim)
+- [nui.nvim](https://github.com/MunifTanjim/nui.nvim) (composer and keymap help only)
 - Optional for HTML rendering: `w3m`, `lynx` or `pandoc`
+- Optional for buffer tabs: a bufferline plugin such as [bufferline.nvim](https://github.com/akinsho/bufferline.nvim)
 
 ## Installation
 
@@ -80,7 +83,7 @@ vim.keymap.set('n', '<Leader>oh', '<Cmd>Himalaya<CR>', { desc = 'Open Himalaya' 
 
 | Command | Description |
 | ------- | ----------- |
-| `:Himalaya [account]` | Open Himalaya client, optionally specifying account |
+| `:Himalaya [account]` | Open Himalaya in a new tabpage, optionally on a given account |
 | `:HimalayaAccounts` | Open account selector |
 | `:HimalayaAccount <name>` | Switch active account directly |
 | `:HimalayaMailboxes` / `:HimalayaFolders` | Open mailbox selector |
@@ -97,8 +100,8 @@ Default keybindings (all customizable via `config.keymaps`):
 | Key | Action | Description |
 | --- | ------ | ----------- |
 | `g?` | `show_keymaps` | Show available keybindings |
-| `<CR>` | `open_email` | Open email in split pane below |
-| `gq` | `close` | Close Himalaya |
+| `<CR>` | `open_email` | Open the email in its own buffer tab |
+| `gq` | `close` | Close the Himalaya tabpage |
 | `]f` | `next_folder` | Next mailbox (supports count) |
 | `[f` | `previous_folder` | Previous mailbox (supports count) |
 | `gF` | `folder_picker` | Open mailbox picker (`vim.ui.select`) |
@@ -123,12 +126,18 @@ Default keybindings (all customizable via `config.keymaps`):
 | --- | ----------- |
 | `<CR>` / click | Open the mailbox under the cursor |
 
+#### Account Sidebar
+
+| Key | Description |
+| --- | ----------- |
+| `<CR>` / click | Switch to the account under the cursor |
+
 #### Email Reading
 
 | Key | Action | Description |
 | --- | ------ | ----------- |
 | `g?` | `show_keymaps` | Show available keybindings |
-| `gq` / `q` | `close_email` | Close email pane |
+| `gq` / `q` | `close_email` | Close the email buffer and return to the list |
 | `gr` / `r` | `reply` | Reply to email |
 | `gf` | `forward` | Forward email |
 | `gD` / `d` | `delete` | Delete email |
@@ -157,9 +166,9 @@ require("himalaya").setup({
   sidebar = {
     width = 30,
   },
-  split_ratio = 0.4, -- email list takes 40% when split
   wrap_folder_navigation = true, -- wrap to first/last when navigating
   icons_enabled = false, -- use nerd font icons for folders
+  accounts_height = 6, -- height of the accounts pane at the bottom of the sidebar
   custom_select = nil, -- custom picker hook: function(items, opts, on_choice)
   render_html = false, -- render HTML bodies to text instead of raw markup
   prefer_html = false, -- prefer the HTML body when text/plain also exists
@@ -211,6 +220,54 @@ require("himalaya").setup({
   },
 })
 ```
+
+## Bufferline integration
+
+The list and reader buffers are regular listed scratch buffers, so any buffer
+tabline shows them as tabs. With bufferline.nvim, these options keep them
+inside the Himalaya tabpage and protect the read-only sidebar:
+
+```lua
+require("bufferline").setup({
+  options = {
+    custom_filter = function(buf)
+      local ok, windows = pcall(require, "himalaya.ui.windows")
+      if not ok then return true end
+      if not vim.b[buf].himalaya_buffer then return true end
+      return windows.in_himalaya_tab()
+    end,
+    left_mouse_command = function(bufnr)
+      local ok, windows = pcall(require, "himalaya.ui.windows")
+      if ok and windows.is_sidebar_window(vim.api.nvim_get_current_win()) then
+        windows.focus_list()
+      end
+      vim.cmd("buffer " .. bufnr)
+    end,
+    close_command = function(bufnr)
+      local ok, email = pcall(require, "himalaya.email")
+      if ok and email.close_buffer(bufnr) then return end
+      vim.cmd("bdelete " .. bufnr)
+    end,
+    right_mouse_command = function(bufnr)
+      local ok, email = pcall(require, "himalaya.email")
+      if ok and email.close_buffer(bufnr) then return end
+      vim.cmd("bdelete " .. bufnr)
+    end,
+    middle_mouse_command = function(bufnr)
+      local ok, email = pcall(require, "himalaya.email")
+      if ok and email.close_buffer(bufnr) then return end
+      vim.cmd("bdelete " .. bufnr)
+    end,
+    offsets = {
+      { filetype = "himalaya-folder-listing", text = "Himalaya", text_align = "left" },
+    },
+  },
+})
+```
+
+Without a bufferline plugin everything still works: the list and reader
+buffers stay in the same right-hand window and `:bnext` / `:bprevious` cycle
+through them.
 
 ## Running Tests
 

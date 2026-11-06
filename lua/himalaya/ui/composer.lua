@@ -60,12 +60,9 @@ function M.close()
 			return
 		end
 
-		if state.email_visible and state.email_popup and state.email_popup.winid and vim.api.nvim_win_is_valid(state.email_popup.winid) then
-			pcall(vim.api.nvim_set_current_win, state.email_popup.winid)
-		elseif state.main_popup and state.main_popup.winid and vim.api.nvim_win_is_valid(state.main_popup.winid) then
-			pcall(vim.api.nvim_set_current_win, state.main_popup.winid)
-		elseif state.sidebar_popup and state.sidebar_popup.winid and vim.api.nvim_win_is_valid(state.sidebar_popup.winid) then
-			pcall(vim.api.nvim_set_current_win, state.sidebar_popup.winid)
+		local ok, windows = pcall(require, "himalaya.ui.windows")
+		if ok and windows.is_open() then
+			windows.focus_list()
 		end
 	end
 

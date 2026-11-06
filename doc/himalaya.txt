@@ -16,24 +16,26 @@ CONTENTS                                                    *himalaya-contents*
 1. INTRODUCTION                                               *himalaya-intro*
 
 himalaya.nvim is a modern Neovim client for the Himalaya CLI email tool (v2.1+).
-It provides mailbox tree browsing, envelope listing with pagination and search,
-message reading with automatic seen flags, optional HTML rendering through an
-external renderer, and a multi-window floating composer.
+It provides a dedicated tabpage with a folder tree, an accounts pane and an
+envelope list, all in ordinary splits. The list and every opened email are
+buffers, so any buffer tabline shows them as editor tabs. HTML bodies render
+through an external renderer, and the composer stays a floating popup.
 
 ==============================================================================
 2. REQUIREMENTS                                        *himalaya-requirements*
 
 - Neovim >= 0.8
 - himalaya CLI v2.0+ (https://github.com/pimalaya/himalaya)
-- nui.nvim (https://github.com/MunifTanjim/nui.nvim)
+- nui.nvim (https://github.com/MunifTanjim/nui.nvim), composer and help only
 - Optional for HTML rendering: w3m, lynx or pandoc
+- Optional for buffer tabs: a bufferline plugin
 
 ==============================================================================
 3. COMMANDS                                                 *himalaya-commands*
 
 :Himalaya [account]
-    Open the Himalaya email interface. If [account] is given, switches to that
-    account on open.
+    Open the Himalaya interface in a new tabpage. If [account] is given,
+    switches to that account on open (or right away when already open).
 
 :HimalayaAccounts
     Open account picker using vim.ui.select.
@@ -58,8 +60,8 @@ external renderer, and a multi-window floating composer.
 
 Email Listing (himalaya-envelope-listing):
     g?            Show available keybindings
-    <CR>          Open email in reader split below
-    gq            Close Himalaya
+    <CR>          Open email in its own buffer tab
+    gq            Close the Himalaya tabpage
     ]f / [f       Next / previous mailbox (supports count)
     gF            Mailbox picker
     gA            Account picker
@@ -78,9 +80,12 @@ Email Listing (himalaya-envelope-listing):
 Mailbox Sidebar (himalaya-folder-listing):
     <CR> / click  Open the mailbox under the cursor
 
+Account Sidebar (himalaya-account-listing):
+    <CR> / click  Switch to the account under the cursor
+
 Email Reading (himalaya-email):
     g?            Show available keybindings
-    gq / q        Close email reader pane
+    gq / q        Close the email buffer and return to the list
     gr / r        Reply to email
     gf            Forward email
     gD / d        Delete email
@@ -104,9 +109,9 @@ Setup example:
 >lua
     require("himalaya").setup({
         sidebar = { width = 30 },
-        split_ratio = 0.4,
         wrap_folder_navigation = true,
         icons_enabled = false,
+        accounts_height = 6, -- height of the accounts pane
         custom_select = nil, -- optional function(items, opts, on_choice)
         render_html = false, -- render HTML bodies to text (w3m/lynx/pandoc)
         prefer_html = false, -- prefer HTML when text/plain also exists

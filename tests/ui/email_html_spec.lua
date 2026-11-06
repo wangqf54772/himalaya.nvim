@@ -3,11 +3,9 @@ local email = require("himalaya.email")
 local config = require("himalaya.config")
 local html = require("himalaya.html")
 local runner = require("himalaya.cli.runner")
-local Popup = require("nui.popup")
-local Layout = require("nui.layout")
 
 describe("UI Email HTML rendering", function()
-	local sidebar_popup, main_popup, email_popup, layout
+	local list_win
 	local original_render, original_render_html, original_prefer_html
 
 	local payload = {
@@ -21,28 +19,15 @@ describe("UI Email HTML rendering", function()
 	}
 
 	before_each(function()
-		sidebar_popup = Popup({ enter = false })
-		main_popup = Popup({ enter = true })
-		email_popup = Popup({ enter = false })
-
-		layout = Layout({
-			position = "50%",
-			size = { width = "90%", height = "90%" },
-		}, Layout.Box({
-			Layout.Box(sidebar_popup, { size = 30 }),
-			Layout.Box(main_popup, { grow = 1 }),
-		}, { dir = "row" }))
-
-		state.sidebar = sidebar_popup.bufnr
-		state.sidebar_popup = sidebar_popup
-		state.main = main_popup.bufnr
-		state.main_popup = main_popup
-		state.email = email_popup.bufnr
-		state.email_popup = email_popup
-		state.layout = layout
-		state.email_visible = false
-		state.current_folder = "INBOX"
+		state.reset_ui()
 		state.current_account = ""
+		state.current_folder = "INBOX"
+		state.is_open = true
+		state.tab = vim.api.nvim_get_current_tabpage()
+		state.main = vim.api.nvim_create_buf(false, true)
+		list_win = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(list_win, state.main)
+		state.wins = { list = list_win }
 		state.current_envelopes = {
 			{
 				id = "101",
@@ -53,6 +38,8 @@ describe("UI Email HTML rendering", function()
 				date = "2026-09-03T01:10:53Z",
 			},
 		}
+		state.email_buffers = {}
+		state.email_state = {}
 
 		original_render = html.render
 		original_render_html = config.config.render_html
@@ -64,6 +51,14 @@ describe("UI Email HTML rendering", function()
 		html.render = original_render
 		config.config.render_html = original_render_html
 		config.config.prefer_html = original_prefer_html
+
+		if list_win and vim.api.nvim_win_is_valid(list_win) then
+			pcall(vim.api.nvim_win_set_buf, list_win, vim.api.nvim_create_buf(false, true))
+		end
+		for _, buf in pairs(state.email_buffers or {}) do
+			pcall(vim.api.nvim_buf_delete, buf, { force = true })
+		end
+		state.reset_ui()
 	end)
 
 	local function mock_message(payload_table, executed)
@@ -93,6 +88,7 @@ describe("UI Email HTML rendering", function()
 		local cmd_str = table.concat(executed.cmd, " ")
 		assert.contains(cmd_str, "message read")
 		assert.contains(cmd_str, "--json")
+		assert.truthy(rendered_args)
 		assert.equals("<p>rich body</p>", rendered_args.content)
 		assert.equals("w3m", rendered_args.renderer)
 

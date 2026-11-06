@@ -16,10 +16,7 @@ local function open_folder()
 	require("himalaya.folder").switch_to(name)
 
 	-- Hand focus back to the envelope list so navigation keeps working.
-	local main_win = state.main and vim.fn.bufwinid(state.main) or -1
-	if main_win ~= -1 then
-		vim.api.nvim_set_current_win(main_win)
-	end
+	require("himalaya.ui.windows").focus_list()
 end
 
 vim.keymap.set("n", "<CR>", open_folder, {

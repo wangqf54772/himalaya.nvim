@@ -4,8 +4,8 @@ M.config = {
 	sidebar = {
 		width = 30,
 	},
+	accounts_height = 6, -- height of the accounts section at the bottom of the sidebar
 	border = "single", -- border style for nui popups: "single", "rounded", "double", etc.
-	split_ratio = 0.4, -- email list takes 40% when split
 	wrap_folder_navigation = true, -- wrap to first/last when navigating folders
 	icons_enabled = false, -- use nerd font icons for folders
 	custom_select = nil, -- optional custom picker function: fn(items, opts, on_choice)

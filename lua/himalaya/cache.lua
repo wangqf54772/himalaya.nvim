@@ -3,6 +3,7 @@ local M = {}
 -- Cache structure: { folder_name = { page_num = envelopes_data } }
 M.envelopes = {}
 M.folders = nil
+M.accounts = nil
 
 function M.get_envelopes(folder, page)
 	if not M.envelopes[folder] then
@@ -24,6 +25,14 @@ end
 
 function M.set_folders(data)
 	M.folders = data
+end
+
+function M.get_accounts()
+	return M.accounts
+end
+
+function M.set_accounts(data)
+	M.accounts = data
 end
 
 function M.adjust_folder_unread(folder_name, delta)
