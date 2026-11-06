@@ -118,6 +118,7 @@ Default keybindings (all customizable via `config.keymaps`):
 | `gM` / `m` | `move` | Move email to mailbox |
 | `gC` | `copy` | Copy email to mailbox |
 | `ga` | `download_attachments` | Download attachments |
+| `<leader>R` | `mark_read` | Mark the selected (or all visually selected) emails as read |
 | `gFa` | `flag_add` | Add flag (`seen`, `flagged`, etc.) |
 | `gFr` | `flag_remove` | Remove flag |
 | `g/` | `search` | Search envelopes query |
@@ -204,6 +205,7 @@ require("himalaya").setup({
       ["m"] = "move",
       ["gC"] = "copy",
       ["ga"] = "download_attachments",
+      ["<leader>R"] = "mark_read",
       ["gFa"] = "flag_add",
       ["gFr"] = "flag_remove",
       ["g/"] = "search",

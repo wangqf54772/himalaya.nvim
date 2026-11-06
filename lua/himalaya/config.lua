@@ -35,6 +35,7 @@ M.config = {
 			["m"] = "move",
 			["gC"] = "copy",
 			["ga"] = "download_attachments",
+			["<leader>R"] = "mark_read",
 			["gFa"] = "flag_add",
 			["gFr"] = "flag_remove",
 			["g/"] = "search",

@@ -81,6 +81,79 @@ function M.remove_flag_from_envelope(env, flag, callback)
 	end)
 end
 
+local function envelope_has_seen(env)
+	for _, f in ipairs(env.flags or {}) do
+		if type(f) == "table" then
+			if f.iana == "seen" or f.raw == "\\Seen" then
+				return true
+			end
+		elseif f == "seen" or f == "\\Seen" then
+			return true
+		end
+	end
+	return false
+end
+
+--- Marks the given envelopes as read (or the selected one when omitted).
+---@param envelopes table[]|nil
+function M.mark_read(envelopes)
+	envelopes = envelopes or {}
+	if #envelopes == 0 then
+		local env = email_mod.get_selected_envelope()
+		if env then
+			envelopes = { env }
+		end
+	end
+	if #envelopes == 0 then
+		vim.notify("No email selected", vim.log.levels.WARN)
+		return
+	end
+
+	local ids = {}
+	local unseen = 0
+	for _, env in ipairs(envelopes) do
+		if env.id then
+			table.insert(ids, env.id)
+			if not envelope_has_seen(env) then
+				unseen = unseen + 1
+			end
+		end
+	end
+	if #ids == 0 then
+		return
+	end
+
+	flag_cli.add({
+		mailbox = state.current_folder,
+		account = state.current_account,
+		flag = "seen",
+		ids = ids,
+	}, function(err)
+		if err then
+			vim.notify("Failed to mark as read: " .. tostring(err), vim.log.levels.ERROR)
+			return
+		end
+
+		for _, env in ipairs(envelopes) do
+			if env.id and not envelope_has_seen(env) then
+				table.insert(env.flags, { iana = "seen", raw = "\\Seen" })
+			end
+		end
+
+		refresh_listing()
+
+		if unseen > 0 then
+			local cache = require("himalaya.cache")
+			cache.adjust_folder_unread(state.current_folder, -unseen)
+			if state.sidebar and vim.api.nvim_buf_is_valid(state.sidebar) and cache.get_folders() then
+				require("himalaya.ui.folder_list").render(state.sidebar, cache.get_folders())
+			end
+		end
+
+		vim.notify(("Marked %d email%s as read"):format(#ids, #ids == 1 and "" or "s"), vim.log.levels.INFO)
+	end)
+end
+
 function M.flag_add()
 	local env = email_mod.get_selected_envelope()
 	if not env then

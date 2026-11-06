@@ -76,6 +76,7 @@ Email Listing (himalaya-envelope-listing):
     gM / m        Move email to mailbox
     gC            Copy email to mailbox
     ga            Download attachments
+    <leader>R     Mark the selected / visually selected emails as read
     gFa / gFr     Add / remove flags (seen, flagged, etc.)
     g/            Search envelopes
 

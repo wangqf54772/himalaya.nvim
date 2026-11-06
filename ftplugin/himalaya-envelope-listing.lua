@@ -9,6 +9,7 @@ local himalaya = require("himalaya")
 local actions_mod = require("himalaya.actions")
 local account_mod = require("himalaya.account")
 local keymap_help = require("himalaya.ui.keymap_help")
+local state = require("himalaya.state")
 
 -- Define actions
 local actions = {
@@ -100,6 +101,10 @@ local actions = {
 		actions_mod.download_attachments()
 	end,
 
+	mark_read = function()
+		actions_mod.mark_read()
+	end,
+
 	flag_add = function()
 		actions_mod.flag_add()
 	end,
@@ -115,6 +120,39 @@ local actions = {
 
 -- Apply keymaps from config
 keymap_util.apply(bufnr, config.config.keymaps.listing, actions)
+
+-- <leader>R also works on a visual selection of envelopes.
+local mark_read_key = nil
+for key, action in pairs(config.config.keymaps.listing) do
+	if action == "mark_read" then
+		mark_read_key = key
+		break
+	end
+end
+if mark_read_key then
+	vim.keymap.set("x", mark_read_key, function()
+		local first = vim.fn.line("v")
+		local last = vim.fn.line(".")
+		if first > last then
+			first, last = last, first
+		end
+
+		local envelopes = {}
+		for i = first, last do
+			if state.current_envelopes[i] then
+				table.insert(envelopes, state.current_envelopes[i])
+			end
+		end
+
+		-- Leave visual mode before the async CLI call.
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+		actions_mod.mark_read(envelopes)
+	end, {
+		buffer = bufnr,
+		nowait = true,
+		desc = "Mark read",
+	})
+end
 
 -- Single click is handled by the shared dispatcher; double click opens.
 require("himalaya.ui.mouse").attach(bufnr)
