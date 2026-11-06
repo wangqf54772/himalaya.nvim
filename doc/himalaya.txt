@@ -61,6 +61,8 @@ through an external renderer, and the composer stays a floating popup.
 Email Listing (himalaya-envelope-listing):
     g?            Show available keybindings
     <CR>          Open email in its own buffer tab
+    <LeftMouse>   Select the row and focus the listing
+    <2-LeftMouse> Open email in its own buffer tab
     gq            Close the Himalaya tabpage
     ]f / [f       Next / previous mailbox (supports count)
     gF            Mailbox picker

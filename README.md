@@ -24,7 +24,7 @@ Himalaya is a modern CLI tool for managing emails from the terminal. This plugin
 - **Mailbox navigation**: Nested folder tree with unread badges plus an accounts pane, both clickable, with next/previous navigation and an interactive picker.
 - **Buffer tabs**: The envelope list and every opened email are listed buffers, so bufferline (or any buffer tabline) shows them as editor tabs; `q` closes the email tab.
 - **Email listing**: Table layout displaying flags, attachment presence, sender, truncated subject, and relative dates.
-- **Email reading**: Open an email in its own buffer tab with `<CR>` or a click, automatic `seen` flag handling.
+- **Email reading**: Select with a single click, open an email in its own buffer tab with `<CR>` or a double click, automatic `seen` flag handling.
 - **HTML rendering** (opt-in): Render HTML bodies to text through `w3m`, `lynx` or `pandoc`, with `gH` toggling the source.
 - **Multi-window composer**: Floating popup matching main dimensions, dedicated sub-windows for To, Cc, Subject, and full-featured vim editing in Body with field cycling (`<Tab>` / `<S-Tab>`), send (`<C-s>`), and draft saving (`<C-d>`).
 - **Mailbox actions**: Move (`gM`), copy (`gC`), and delete (`gD` with confirmation).
@@ -101,6 +101,8 @@ Default keybindings (all customizable via `config.keymaps`):
 | --- | ------ | ----------- |
 | `g?` | `show_keymaps` | Show available keybindings |
 | `<CR>` | `open_email` | Open the email in its own buffer tab |
+| `<LeftMouse>` | `select` | Select the row and focus the listing |
+| `<2-LeftMouse>` | `open_email` | Open the email in its own buffer tab |
 | `gq` | `close` | Close the Himalaya tabpage |
 | `]f` | `next_folder` | Next mailbox (supports count) |
 | `[f` | `previous_folder` | Previous mailbox (supports count) |
