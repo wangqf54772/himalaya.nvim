@@ -26,6 +26,8 @@ function M.reload()
 		return
 	end
 
+	require("himalaya.refresh").touch()
+
 	local main_win = vim.fn.bufwinid(state.main)
 	if main_win == -1 then
 		return

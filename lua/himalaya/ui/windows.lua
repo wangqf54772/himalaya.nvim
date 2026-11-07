@@ -209,6 +209,7 @@ end
 
 function M.load()
 	local account = state.current_account
+	require("himalaya.refresh").touch()
 
 	account_list.load(state.accounts, function(err, accounts)
 		if err then
@@ -387,8 +388,13 @@ function M.create()
 	state.email = nil
 
 	M.setup_autocmds()
+
+	local refresh = require("himalaya.refresh")
+	refresh.setup()
+
 	vim.api.nvim_set_current_win(list_win)
 	M.load()
+	refresh.schedule()
 end
 
 function M.close()
@@ -398,6 +404,9 @@ function M.close()
 	state.closing = true
 
 	pcall(vim.api.nvim_del_augroup_by_name, "HimalayaWindows")
+	pcall(function()
+		require("himalaya.refresh").teardown()
+	end)
 
 	local tab = state.tab
 	local prev_tab = state.prev_tab

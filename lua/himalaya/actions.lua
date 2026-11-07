@@ -365,6 +365,7 @@ function M.search()
 		end
 
 		local layout = require("himalaya.ui.layout")
+		require("himalaya.refresh").touch()
 		layout.show_spinner("Searching")
 
 		envelope_cli.search({

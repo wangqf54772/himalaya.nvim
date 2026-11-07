@@ -103,6 +103,29 @@ function M.after_each(fn)
 	table.insert(after_each_hooks, fn)
 end
 
+--- Runs `fn` with the hooks it registers, then drops them.
+---
+--- `before_each`/`after_each` were global, so the hooks of one spec kept
+--- running for every later spec, leaking windows and mocks across files.
+---@param fn fun()
+function M.scope(fn)
+	local before_count = #before_each_hooks
+	local after_count = #after_each_hooks
+
+	local ok, err = pcall(fn)
+
+	for i = #before_each_hooks, before_count + 1, -1 do
+		table.remove(before_each_hooks, i)
+	end
+	for i = #after_each_hooks, after_count + 1, -1 do
+		table.remove(after_each_hooks, i)
+	end
+
+	if not ok then
+		error(err)
+	end
+end
+
 function M.it(test_name, fn)
 	total_tests = total_tests + 1
 

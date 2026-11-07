@@ -23,6 +23,9 @@ M.accounts = nil -- Accounts sidebar buffer
 M.email_buffers = {} -- Message id -> reader buffer
 M.email_state = {} -- Reader buffer -> per-message render state
 M.closing = false -- Guard against re-entrant close/BufDelete handlers
+M.refresh_timer = nil -- uv timer for the periodic refresh
+M.refreshing = false -- Guard against overlapping refreshes
+M.refresh_last = nil -- uv.now() of the last focus-driven refresh
 
 function M.reset_ui()
 	M.is_open = false
@@ -37,6 +40,9 @@ function M.reset_ui()
 	M.account_lines = {}
 	M.selected_email_id = nil
 	M.current_folder = nil
+	M.refresh_timer = nil
+	M.refreshing = false
+	M.refresh_last = nil
 end
 
 return M

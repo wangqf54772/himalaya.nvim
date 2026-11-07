@@ -23,6 +23,7 @@ function M.switch_to(account_name)
 		require("himalaya.email").close_all()
 	end)
 
+	require("himalaya.refresh").touch()
 	vim.notify("Switched to account: " .. account_name, vim.log.levels.INFO)
 
 	if state.accounts and vim.api.nvim_buf_is_valid(state.accounts) then

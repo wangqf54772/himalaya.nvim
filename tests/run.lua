@@ -24,7 +24,9 @@ print(string.format("Running %d test file(s)...", #test_files))
 for _, file in ipairs(test_files) do
 	local rel = file:sub(#project_root + 2)
 	print("\n\27[34m--- " .. rel .. " ---\27[0m")
-	dofile(file)
+	framework.scope(function()
+		dofile(file)
+	end)
 end
 
 local exit_code = framework.report()

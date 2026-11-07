@@ -6,6 +6,7 @@ local envelope = require("himalaya.cli.envelope")
 local envelope_list = require("himalaya.ui.envelope_list")
 local layout = require("himalaya.ui.layout")
 local windows = require("himalaya.ui.windows")
+local cache = require("himalaya.cache")
 
 local M = {}
 
@@ -90,6 +91,7 @@ function M.switch_to(folder_name)
 	end
 
 	state.current_folder = target
+	require("himalaya.refresh").touch()
 	windows.show_list()
 
 	local cache = require("himalaya.cache")
@@ -140,6 +142,7 @@ function M.next(silent, skip_reload)
 	end
 
 	if changed then
+		require("himalaya.refresh").touch()
 		windows.show_list()
 		local cache = require("himalaya.cache")
 		local cached = cache.get_folders()
@@ -197,6 +200,7 @@ function M.previous(silent, skip_reload)
 	end
 
 	if changed then
+		require("himalaya.refresh").touch()
 		windows.show_list()
 		local cache = require("himalaya.cache")
 		local cached = cache.get_folders()
@@ -234,14 +238,21 @@ function M.picker()
 end
 
 -- Reload current folder
-function M.reload()
+--- Reloads the folder list and the current page of envelopes.
+---@param callback fun(err: string|nil)|nil Called once both requests settled
+function M.reload(callback)
 	windows.show_list()
+	require("himalaya.refresh").touch()
 	layout.show_spinner("Reloading")
 
 	reload_folders(true)
 
 	-- Reload emails
 	if not state.main then
+		layout.hide_spinner()
+		if callback then
+			callback(nil)
+		end
 		return
 	end
 
@@ -253,15 +264,21 @@ function M.reload()
 		page_size = height,
 		account = state.current_account,
 	}, function(err, data)
+		layout.hide_spinner()
 		if err then
-			layout.hide_spinner()
-			vim.notify("Failed to load emails: " .. err, vim.log.levels.ERROR)
+			layout.update_page_footer()
+			if callback then
+				callback(err)
+			end
 			return
 		end
 
+		cache.set_envelopes(state.current_folder, state.current_page, data)
 		envelope_list.render(state.main, data)
-		layout.hide_spinner()
 		layout.update_page_footer()
+		if callback then
+			callback(nil)
+		end
 	end)
 end
 

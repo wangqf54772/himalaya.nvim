@@ -178,6 +178,8 @@ require("himalaya").setup({
   wrap_folder_navigation = true, -- wrap to first/last when navigating
   icons_enabled = false, -- use nerd font icons for folders
   accounts_height = 6, -- height of the accounts pane at the bottom of the sidebar
+  refresh_interval = 600, -- seconds between automatic refreshes, 0 disables it
+  refresh_focus_debounce = 10, -- seconds to ignore repeated focus refreshes
   custom_select = nil, -- custom picker hook: function(items, opts, on_choice)
   render_html = false, -- render HTML bodies to text instead of raw markup
   prefer_html = false, -- prefer the HTML body when text/plain also exists
@@ -230,6 +232,23 @@ require("himalaya").setup({
   },
 })
 ```
+
+## Refresh behaviour
+
+There is no background sync: every refresh is one Himalaya CLI call. The plugin
+schedules them itself, and only while its tabpage is open:
+
+- **Timer**: `refresh_interval` seconds (default 600) after the last query.
+  Any query — opening the UI, switching account/mailbox, changing page,
+  `R`, a search, or a focus refresh — restarts the countdown.
+- **Focus**: regaining Neovim focus refreshes the listing, debounced by
+  `refresh_focus_debounce` (default 10s) so alt-tabbing does not hammer the
+  server.
+- **Tab switch**: entering the Himalaya tabpage refreshes it.
+
+The timer never fires while the Himalaya tabpage is not the current one, and
+everything stops when the UI is closed. Set `refresh_interval = 0` to disable
+the periodic part.
 
 ## Bufferline integration
 
