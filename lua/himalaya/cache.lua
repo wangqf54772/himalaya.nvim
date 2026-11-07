@@ -6,6 +6,9 @@ M.folders = nil
 M.accounts = nil
 
 function M.get_envelopes(folder, page)
+	if not folder or not page then
+		return nil
+	end
 	if not M.envelopes[folder] then
 		return nil
 	end
@@ -13,6 +16,12 @@ function M.get_envelopes(folder, page)
 end
 
 function M.set_envelopes(folder, page, data)
+	-- A nil mailbox or page happens while the mailbox list is still being
+	-- resolved (e.g. right after switching account); there is nothing to key on.
+	if not folder or not page then
+		return
+	end
+
 	if not M.envelopes[folder] then
 		M.envelopes[folder] = {}
 	end

@@ -41,8 +41,13 @@ local function reload_emails(silent)
 end
 
 -- Reload folder list to update highlighting
-local function reload_folders(silent)
+---@param silent boolean
+---@param callback fun(err: string|nil)|nil
+local function reload_folders(silent, callback)
 	if not state.sidebar then
+		if callback then
+			callback(nil)
+		end
 		return
 	end
 
@@ -57,11 +62,19 @@ local function reload_folders(silent)
 			if not silent then
 				vim.notify("Failed to reload folders: " .. err, vim.log.levels.ERROR)
 			end
+			if callback then
+				callback(err)
+			end
 			return
 		end
 
 		cache.set_folders(data)
+		-- Rendering resolves the active mailbox, including after an account
+		-- switch, which clears state.current_folder.
 		folder_list.render(state.sidebar, data)
+		if callback then
+			callback(nil)
+		end
 	end)
 end
 
@@ -245,40 +258,51 @@ function M.reload(callback)
 	require("himalaya.refresh").touch()
 	layout.show_spinner("Reloading")
 
-	reload_folders(true)
-
-	-- Reload emails
-	if not state.main then
-		layout.hide_spinner()
-		if callback then
-			callback(nil)
-		end
-		return
-	end
-
-	local win = state.wins and state.wins.list
-	local height = (win and vim.api.nvim_win_is_valid(win)) and vim.api.nvim_win_get_height(win) or 20
-	envelope.list({
-		folder = state.current_folder,
-		page = state.current_page,
-		page_size = height,
-		account = state.current_account,
-	}, function(err, data)
-		layout.hide_spinner()
-		if err then
-			layout.update_page_footer()
+	-- The mailbox list goes first: it resolves the active mailbox, which an
+	-- account switch clears. Listing envelopes before that would ask the CLI
+	-- for the default mailbox and key the cache on a nil name.
+	reload_folders(true, function(folder_err)
+		if not state.main then
+			layout.hide_spinner()
 			if callback then
-				callback(err)
+				callback(folder_err)
 			end
 			return
 		end
 
-		cache.set_envelopes(state.current_folder, state.current_page, data)
-		envelope_list.render(state.main, data)
-		layout.update_page_footer()
-		if callback then
-			callback(nil)
+		if folder_err or not state.current_folder then
+			layout.hide_spinner()
+			layout.update_page_footer()
+			if callback then
+				callback(folder_err or "no active mailbox")
+			end
+			return
 		end
+
+		local win = state.wins and state.wins.list
+		local height = (win and vim.api.nvim_win_is_valid(win)) and vim.api.nvim_win_get_height(win) or 20
+		envelope.list({
+			folder = state.current_folder,
+			page = state.current_page,
+			page_size = height,
+			account = state.current_account,
+		}, function(err, data)
+			layout.hide_spinner()
+			if err then
+				layout.update_page_footer()
+				if callback then
+					callback(err)
+				end
+				return
+			end
+
+			cache.set_envelopes(state.current_folder, state.current_page, data)
+			envelope_list.render(state.main, data)
+			layout.update_page_footer()
+			if callback then
+				callback(nil)
+			end
+		end)
 	end)
 end
 

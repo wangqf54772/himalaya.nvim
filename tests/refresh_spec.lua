@@ -90,4 +90,40 @@ describe("Automatic refresh", function()
 		assert.truthy(state.refresh_timer)
 		assert.truthy(state.refresh_timer ~= first, "expected a fresh timer")
 	end)
+
+	it("resolves the mailbox before listing envelopes after an account switch", function()
+		local folder = require("himalaya.folder")
+		local cache = require("himalaya.cache")
+
+		-- account.switch_to() clears the mailbox before reloading.
+		state.current_folder = nil
+		cache.clear()
+
+		local envelope_calls = 0
+		runner.set_mock(function(cmd, callback)
+			local str = table.concat(cmd, " ")
+			if str:find("account list", 1, true) then
+				callback(nil, fixtures.accounts_json)
+			elseif str:find("mailbox list", 1, true) then
+				callback(nil, fixtures.mailboxes_json)
+			elseif str:find("envelope list", 1, true) then
+				envelope_calls = envelope_calls + 1
+				callback(nil, '{"envelopes":[]}')
+			else
+				callback(nil, "{}")
+			end
+		end)
+
+		local err
+		folder.reload(function(e)
+			err = e
+		end)
+		vim.wait(2000, function()
+			return state.current_folder ~= nil and envelope_calls > 0
+		end, 50)
+
+		assert.is_nil(err)
+		assert.truthy(state.current_folder, "the mailbox list should resolve the default mailbox")
+		assert.truthy(envelope_calls > 0, "envelopes are listed once the mailbox is known")
+	end)
 end)
